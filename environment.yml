@@ -1,0 +1,12 @@
+name: laplace
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  - numpy
+  - scipy
+  - matplotlib
+  - trimesh
+  - pyglet<2
+  - ipykernel
