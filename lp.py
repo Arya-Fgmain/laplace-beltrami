@@ -16,8 +16,11 @@ vi, vj, vk = V[i], V[j], V[k] # corresponding coordinates of the aforementioned 
 area_2x = np.linalg.norm(np.cross(vj - vi, vk - vi), axis=1)
 
 # cotangents of three angles
+# recall cot = a.b / ||a x b|| = a.b / (2*area)
 # Einstein summation
-cot_i = np.einsum('ik, ik->i', vj-vi, vk-vi) / area_2x  # equiv. to np.sum((vj-vi)*(vk-vi), axis=1) / area_2x
+# equiv. to np.sum((vj-vi)*(vk-vi), axis=1) / area_2x
+# 'ik,ik' <=> multiply corresponding coordinates -> gives us the 'product' part of dot product, then '->i' <=> sum along the second axis (k) to get the dot product for each triangle
+cot_i = np.einsum('ik, ik->i', vj-vi, vk-vi) / area_2x  
 cot_j = np.einsum('ik, ik->i', vk-vj, vi-vj) / area_2x
 cot_k = np.einsum('ik, ik->i', vi-vk, vj-vk) / area_2x
 
@@ -31,8 +34,10 @@ w = 0.5 * np.concatenate([cot_i, cot_j, cot_k])
 
 # Symmetric weighted adjacency matrix
 # construct matrix W, where W[i,j] = (1/2)(cot(alpha_ij) + cot(beta_ij)) for ij an edge in E
+# np.r_ is for easy concatenation
 W = sparse.coo_matrix(
     (np.r_[w, w], (np.r_[a, b], np.r_[b, a])),
+        # the second and third np.r_ specify the row and column indices of non-zero entries in the sparse matrix
     shape=(n, n)
 ).tocsr()
 
@@ -77,7 +82,7 @@ if True:
 
     # Time discretization
     dt = 0.02 * R**2
-    num_steps = 80
+    num_steps = 5
 
     # Backward Euler
     solve = factorized((M - dt*C).tocsc())
