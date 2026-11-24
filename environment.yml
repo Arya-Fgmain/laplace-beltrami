@@ -10,3 +10,4 @@ dependencies:
   - trimesh
   - pyglet<2
   - ipykernel
+  - plotly
