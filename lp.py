@@ -102,8 +102,6 @@ r = 50  # number of eigenvalues to compute
 mu, Phi = eigsh(-C, k=r, M=M, sigma=-1e-8, which='LM')
     # LM = 'Largest in Magnitude'
 
-mu = mu[10:]
-
 # sort in ascending order
 sorted_indices = np.argsort(mu)
 mu = np.maximum(mu[sorted_indices], 0.0)
@@ -114,7 +112,7 @@ center = V.mean(axis=0) # center of our sphere
 R = np.mean(np.linalg.norm(V-center, axis=1))   # radius
 north = V[np.argmax(V[:,2])]
 
-sigma = 0.9 * R
+sigma = 2.4 * R
 u0 = np.exp(-np.sum((V - north)**2, axis=1) / (2 * sigma**2))
 
 # projection coefficients

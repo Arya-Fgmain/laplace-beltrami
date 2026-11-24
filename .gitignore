@@ -1,0 +1,12 @@
+# mac-specific
+.DS_Store
+
+# gigantic html file
+sphere_heat_spectral.html
+
+# mesh files
+*.ply
+*.stl
+
+# exception
+!sphere.stl 
