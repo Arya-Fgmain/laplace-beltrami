@@ -67,7 +67,7 @@ def solve_heat_gfd(mesh, u0, dt, T):
         u = solve(u)
     return u
 
-mesh = trimesh.load_mesh("sphere.stl", force = "mesh")
+mesh = trimesh.load_mesh("SqPyramid.stl", force = "mesh")
 '''Preprocessing'''
 # merge vertices at identical positions
 mesh.merge_vertices()
@@ -94,8 +94,9 @@ north = V[np.argmax(V[:,2])]
 
 sigma = 2.4 * R
 u0 = np.exp(-np.sum((V - north)**2, axis=1) / (2 * sigma**2))
-
-u_final = solve_heat_gfd(mesh, u0, dt=0.001, T=0.1)
+dt = 0.001
+T = 0.1
+u_final = solve_heat_gfd(mesh, u0, dt=dt, T=T)
 
 # Convert trimesh faces into PyVista face format
 faces = np.hstack([np.full((len(mesh.faces), 1), 3),mesh.faces]).astype(np.int64)
