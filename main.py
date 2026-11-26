@@ -18,6 +18,7 @@ from lp import (
     preprocess_mesh,
     solve_discrete_heat,
 )
+from stability import DEFAULT_EPSILONS, evaluate_stability, plot_stability, print_stability
 
 
 class ModeErrors(NamedTuple):
@@ -197,6 +198,11 @@ def main():
     parser.add_argument('--diffusivity', type=float, default=1.0)
     parser.add_argument('--times', type=float, nargs='+', default=[0.0, 0.01, 0.1, 1.0])
     parser.add_argument('--plot', action='store_true', help='Save error plots for each mesh resolution')
+    stability = parser.add_argument_group('initial condition stability')
+    stability.add_argument('--stability', action='store_true', help='Run the initial perturbation experiment')
+    stability.add_argument('--epsilons', type=float, nargs='+', default=DEFAULT_EPSILONS)
+    stability.add_argument('--trials', type=int, default=25, help='Number of random perturbation directions')
+    stability.add_argument('--seed', type=int, default=0, help='Random seed for the stability experiment')
     args = parser.parse_args()
 
     if args.subdivisions is not None:
@@ -216,13 +222,25 @@ def main():
             parser.error(f"Mode counts cannot exceed the mesh's {len(mesh.vertices)} vertices.")
         normalize_unit_sphere(mesh)
         u0, exact = sphere_problem(mesh.vertices, diffusivity=args.diffusivity, case=args.case)
+        output_dir = Path('plots') / args.case / f'{mesh_name}_N_{len(mesh.vertices)}'
+        if args.stability:
+            print(f'\n{len(mesh.vertices)} vertices, h = {mesh.edges_unique_length.max():.6g}')
+            result = evaluate_stability(
+                mesh, u0, times=args.times, mode_counts=args.modes, diffusivity=args.diffusivity,
+                epsilons=args.epsilons, trials=args.trials, seed=args.seed,
+            )
+            print_stability(result)
+            if args.plot:
+                plot_stability(result, output_dir / 'stability')
+                print(f'Saved plots in {output_dir / "stability"}')
+            continue
+
         result = evaluate_mesh(
             mesh, u0, times=args.times, mode_counts=args.modes,
             diffusivity=args.diffusivity, exact_solution=exact,
         )
         print_evaluation(result)
         if args.plot:
-            output_dir = Path('plots') / args.case / f'{mesh_name}_N_{result.vertex_count}'
             plot_evaluation(result, output_dir)
             print(f'Saved plots in {output_dir}')
 

@@ -44,3 +44,29 @@ For a custom problem, clean the mesh with `lp.preprocess_mesh`, then call
 `main.evaluate_mesh` with one initial value per cleaned vertex, the evaluation
 times, the mode counts, and optionally an `exact_solution(t)` that returns
 values on those same vertices. Use matching diffusivity in both solutions.
+
+## Initial condition stability
+
+Use `--stability` to compare perturbed and unperturbed numerical solutions on
+the same mesh and eigenbasis. The experiment uses 25 seeded random directions
+by default. Each direction has zero area-weighted mean and unit area-weighted
+L2 norm, so `epsilon` is the L2 change in the initial data and total heat is
+preserved. The same directions are reused at every perturbation size and mode
+count. The first nonconstant eigenmode is also tested as a low-frequency check.
+
+```sh
+python main.py --subdivisions 1 2 --modes 4 9 25 --case multimode \
+  --stability --epsilons 1e-6 1e-4 1e-2 1e-1 --times 0 0.01 0.1 1 --plot
+```
+
+Use `--trials` and `--seed` to change the number of random draws and reproduce
+a run. With `--plot`, each mesh folder contains `stability/R_<count>/` with two
+figures.
+
+- `change_vs_perturbation.png` shows L2 and Linf solution change against
+  `epsilon` at the chosen times, with a median and 5th–95th percentile band.
+- `gain_vs_time.png` shows solution change divided by the largest tested
+  `epsilon`, with the low-frequency check and the L2 gain bound of 1.
+
+Both gains use the input's L2 norm as the denominator. The bound applies to
+L2 gain.
