@@ -4,9 +4,12 @@
 # gigantic html file
 sphere_heat_spectral.html
 
+# generated accuracy plots
+/plots/
+
 # mesh files
 *.ply
 *.stl
 
 # exception
-!sphere.stl 
+!sphere.stl
