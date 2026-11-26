@@ -95,50 +95,48 @@ mesh.remove_unreferenced_vertices()
 # print("Cleaned faces", len(mesh.faces))
 '''End of Preprocessing'''
 
-
-vertices = mesh.vertices
-faces = mesh.faces
+V = mesh.vertices
+F = mesh.faces
 
 # Approximate sphere center
-mesh_center = vertices.mean(axis=0)
+mesh_center = V.mean(axis=0)
 
 # Approximate sphere radius
-radius = np.mean(
-    np.linalg.norm(vertices - mesh_center, axis=1)
-)
+radius = np.mean(np.linalg.norm(V - mesh_center, axis=1))
 
 # Average edge length
 edge_lengths = mesh.edges_unique_length
 h = edge_lengths.mean()
 
-K, M = assemble_matrices(vertices, faces)
+K, M = assemble_matrices(V, F)
 
-sigma = 1.0 * radius
-center = vertices[0]
-distances = np.linalg.norm(vertices - center, axis=1)
-u0 = np.exp(-distances**2 / (2 * sigma**2))
+center = V.mean(axis=0) # center of our sphere
+R = np.mean(np.linalg.norm(V-center, axis=1))   # radius
+north = V[np.argmax(V[:,2])]
+
+sigma = 2.4 * R
+u0 = np.exp(-np.sum((V - north)**2, axis=1) / (2 * sigma**2))
 
 print("Started solving heat equation")
 # Solve
-dt = 1.0
-steps = 100
+dt = 0.001
+T = 0.1
+steps = int(np.ceil(T / dt))
+dt = T / steps
 u = solve_heat_equation(K, M, u0, dt, steps)
-initial_heat = np.ones(len(u0)) @ (M @ u0)
-final_heat = np.ones(len(u)) @ (M @ u)
 
 # Convert trimesh faces into PyVista face format
 pv_faces = np.column_stack((
-    np.full(len(faces), 3),
-    faces
+    np.full(len(F), 3),
+    F
 )).ravel()
-surface = pv.PolyData(vertices, pv_faces)
-surface.point_data["Heat"] = u0
+surface = pv.PolyData(V, pv_faces)
+surface.point_data["Heat"] = u
 plotter = pv.Plotter()
 plotter.add_mesh(
     surface,
     scalars="Heat",
     cmap="inferno",
-    clim=[0, 1],
     show_edges=False
 )
 plotter.show()
