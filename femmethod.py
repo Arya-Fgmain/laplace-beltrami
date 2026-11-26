@@ -122,7 +122,6 @@ print("Started solving heat equation")
 dt = 0.001
 T = 0.1
 steps = int(np.ceil(T / dt))
-dt = T / steps
 u = solve_heat_equation(K, M, u0, dt, steps)
 
 # Convert trimesh faces into PyVista face format
